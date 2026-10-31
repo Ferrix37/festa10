@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Trova il tuo tavolo</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  font-family: Georgia, serif;
+  background: #f7f3eb;
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  background: white;
+  padding: 35px 25px;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 8px 30px #00000012;
+}
+
+h1 {
+  color: red;
+  font-size: 32px;
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: #817665;
+  margin-bottom: 30px;
+}
+
+
+
+.foto {
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #d8c9ad;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 15px;
+  text-align: center;
+  outline: none;
+}
+
+input:focus {
+  border-color: #a35454;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  background: #a38754;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  font-family: Georgia, serif;
+}
+
+button:hover {
+  background: #80683f;
+}
+
+#risultato {
+  margin-top: 25px;
+  color: #817665;
+}
+
+.tavolo {
+  background: #f7f3eb;
+  padding: 25px;
+  border-radius: 12px;
+  color: #a38754;
+  font-size: 32px;
+  margin: 15px 0;
+}
+
+.errore {
+  color: #b33b35;
+  font-size: 16px;
+}
+
+.footer {
+  margin-top: 30px;
+  color: #a35454;
+  font-size: 13px;
+}
+
+.secondario {
+  margin-top: 10px;
+  background: #816565;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div id="paginaIniziale">
+
+  <img
+    src="images.jpg"
+    class="foto"
+    alt="Foto iniziale"
+  >
+
+  <h1>Benvenuti alla festa di laurea
+  del Dottor Gianluca Ferretti!</h1>
+
+  <p class="subtitle">
+    Siamo felici di avervi qui.<br>
+    Scopri dove accomodarti.
+  </p>
+
+</div>
+
+  <div id="ricercaNome">
+
+    <input
+      type="text"
+      id="nome"
+      placeholder="Inserisci il tuo nome"
+      autocomplete="off"
+      onkeydown="if(event.key === 'Enter') cercaTavolo()"
+    >
+
+    <button onclick="cercaTavolo()">
+      Cerca il mio tavolo
+    </button>
+
+  </div>
+
+  <div id="risultato"></div>
+
+  <div class="footer">
+    Con affetto ❤️
+  </div>
+
+</div>
+
+
+<script>
+
+// ==================================
+// LISTA INVITATI
+// ==================================
+
+const invitati = [
+
+  // TAVOLO 1
+  { nome: "Mario", cognome: "Rossi", tavolo: 1 },
+  { nome: "Marco", cognome: "Bianchi", tavolo: 1 },
+  { nome: "Anna", cognome: "Verdi", tavolo: 1 },
+  { nome: "Anto", cognome: "Neri", tavolo: 1 },
+
+  // TAVOLO 2
+  { nome: "Ricky", cognome: "Blu", tavolo: 2 },
+  { nome: "Martin", cognome: "Gialli", tavolo: 2 },
+  { nome: "Anna", cognome: "Rossi", tavolo: 2 },
+
+  //TAVOLO 3
+  { nome: "Anna", cognome: "Bianchi", tavolo: 3 }
+
+];
+
+
+// ===================================
+// FOTO ASSOCIATA A OGNI TAVOLO
+// ===================================
+
+const fotoTavoli = {
+
+  1: "java.png",
+
+  2: "phyton.png",
+
+  3: "tavolo3.jpg"
+
+};
+
+
+// ==================================
+// RICERCA DEL NOME
+// ==================================
+
+function cercaTavolo() {
+
+  const inserimento = document
+    .getElementById("nome")
+    .value.trim().toLowerCase()
+    .replace(/\s+/g, " ");
+
+  const risultato = document.getElementById("risultato");
+
+  if (!inserimento) {
+    risultato.innerHTML =
+      '<p class="errore">Inserisci il tuo nome!</p>';
+    return;
+  }
+
+  // Cerca direttamente nome e cognome
+  const personaCompleta = invitati.find(p =>
+    `${p.nome} ${p.cognome}`.toLowerCase() === inserimento
+  );
+
+  if (personaCompleta) {
+    mostraTavolo(personaCompleta);
+    return;
+  }
+
+  // Se è stato inserito solo il nome
+  const corrispondenze = invitati.filter(p =>
+    p.nome.toLowerCase() === inserimento
+  );
+
+  if (corrispondenze.length === 0) {
+
+    document.getElementById("ricercaNome").style.display = "none";
+
+    risultato.innerHTML = `
+      <h2 class="errore">Ops! Non ti troviamo</h2>
+      <p>Il nominativo non risulta nella lista degli invitati.</p>
+      <button class="secondario" onclick="riprovaNome()">
+        Riprova
+      </button>
+    `;
+
+    return;
+  }
+
+  if (corrispondenze.length === 1) {
+    mostraTavolo(corrispondenze[0]);
+    return;
+  }
+
+  // Se ci sono più persone con lo stesso nome
+  document.getElementById("ricercaNome").style.display = "none";
+
+  risultato.innerHTML = `
+    <p>Ci sono più persone con questo nome.</p>
+    <p>Inserisci il tuo cognome:</p>
+
+    <input
+      type="text"
+      id="cognome"
+      placeholder="Inserisci il cognome"
+      autocomplete="off"
+      onkeydown="if(event.key === 'Enter') cercaCognome()"
+    >
+
+    <button onclick="cercaCognome()">Conferma</button>
+
+    <button class="secondario" onclick="riprovaNome()">
+      Torna indietro
+    </button>
+  `;
+}
+
+
+// ==================================
+// RICERCA DEL COGNOME
+// ==================================
+
+function cercaCognome() {
+
+  const nome = document
+    .getElementById("nome")
+    .value.trim().toLowerCase();
+
+  const cognome = document
+    .getElementById("cognome")
+    .value.trim().toLowerCase();
+
+  const risultato = document.getElementById("risultato");
+
+  if (!cognome) {
+
+    risultato.innerHTML =
+      '<p class="errore">Inserisci il tuo cognome!</p>';
+
+    return;
+  }
+
+  const persona = invitati.find(p =>
+    p.nome.toLowerCase() === nome &&
+    p.cognome.toLowerCase() === cognome
+  );
+
+  if (persona) {
+
+    mostraTavolo(persona);
+
+  } else {
+
+    risultato.innerHTML = `
+      <p class="errore">
+        Cognome non trovato.<br>
+        Controlla e riprova!
+      </p>
+
+      <button onclick="cercaTavolo()">
+        Riprova
+      </button>
+    `;
+
+  }
+
+}
+
+
+// ==================================
+// MOSTRA TAVOLO E FOTOGRAFIA
+// ===================================
+
+function mostraTavolo(persona) {
+
+  const foto = fotoTavoli[persona.tavolo];
+
+  // Nasconde tutta la schermata iniziale
+  document.getElementById("paginaIniziale")
+    .style.display = "none";
+
+  // Nasconde anche la ricerca
+  document.getElementById("ricercaNome")
+    .style.display = "none";
+
+  // Mostra il risultato
+  document.getElementById("risultato").innerHTML = `
+
+    <h1>Complimenti ${persona.nome}!</h1>
+
+    <p>Il tuo tavolo è:</p>
+
+    <div class="tavolo">
+      TAVOLO ${persona.tavolo}
+    </div>
+
+    ${foto ? `
+      <img
+        src="${foto}"
+        class="foto"
+        alt="Foto del tavolo ${persona.tavolo}"
+        onerror="this.style.display='none'"
+      >
+    ` : ""}
+
+    <p>Buon divertimento!</p>
+
+    <button class="secondario" onclick="ricomincia()">
+      Nuova ricerca
+    </button>
+
+  `;
+}
+
+// ==================================
+// RICOMINCIA LA RICERCA
+// ==================================
+
+function ricomincia() {
+
+  document.getElementById("nome").value = "";
+
+  document.getElementById("paginaIniziale")
+    .style.display = "block";
+
+  document.getElementById("ricercaNome")
+    .style.display = "block";
+
+  document.getElementById("risultato").innerHTML = "";
+
+}
+
+
+function riprovaNome() {
+
+  document.getElementById("nome").value = "";
+
+  document.getElementById("risultato").innerHTML = "";
+
+  document.getElementById("paginaIniziale").style.display = "block";
+
+  document.getElementById("ricercaNome").style.display = "block";
+
+  document.getElementById("nome").focus();
+
+}
+
+
+
+</script>
+
+</body>
+</html>
+
